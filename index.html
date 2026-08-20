@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crash Game</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #080808;
+    color: white;
+    text-align: center;
+}
+
+.container {
+    max-width: 500px;
+    margin: auto;
+    padding: 20px;
+}
+
+h1 {
+    margin-bottom: 5px;
+}
+
+.balance {
+    font-size: 20px;
+    margin: 15px 0;
+}
+
+.game {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 15px;
+    padding: 30px 15px;
+    margin-top: 20px;
+}
+
+.multiplier {
+    font-size: 55px;
+    font-weight: bold;
+    margin: 30px 0;
+}
+
+.plane {
+    font-size: 55px;
+    margin: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    margin-bottom: 12px;
+    font-size: 18px;
+    text-align: center;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 8px;
+    cursor: pointer;
+}
+
+.bet {
+    background: #00c853;
+    color: white;
+}
+
+.cashout {
+    background: #ff9800;
+    color: white;
+}
+
+button:disabled {
+    background: #555;
+}
+
+.history {
+    text-align: left;
+    margin-top: 25px;
+    background: #111;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.history div {
+    padding: 7px;
+    border-bottom: 1px solid #333;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>✈️ CRASH GAME</h1>
+
+<div class="balance">
+Balance: <strong><span id="balance">1000</span> Coins</strong>
+</div>
+
+<div class="game">
+
+<div class="plane" id="plane">✈️</div>
+
+<div class="multiplier" id="multiplier">1.00x</div>
+
+<input type="number" id="betAmount" value="100" min="10">
+
+<button class="bet" id="betButton" onclick="startGame()">
+BET
+</button>
+
+<button class="cashout" id="cashButton" onclick="cashOut()" disabled>
+CASH OUT
+</button>
+
+<div id="message"></div>
+
+</div>
+
+<div class="history">
+
+<h3>📊 Recent Games</h3>
+
+<div id="history"></div>
+
+</div>
+
+</div>
+
+<script>
+
+let balance = 1000;
+let multiplier = 1.00;
+let gameRunning = false;
+let cashedOut = false;
+let bet = 0;
+let timer;
+let crashPoint;
+
+const balanceDisplay = document.getElementById("balance");
+const multiplierDisplay = document.getElementById("multiplier");
+const betButton = document.getElementById("betButton");
+const cashButton = document.getElementById("cashButton");
+const message = document.getElementById("message");
+const history = document.getElementById("history");
+
+function startGame() {
+
+    if (gameRunning) return;
+
+    bet = Number(document.getElementById("betAmount").value);
+
+    if (bet <= 0) {
+        message.innerText = "Enter a valid bet.";
+        return;
+    }
+
+    if (bet > balance) {
+        message.innerText = "Not enough coins.";
+        return;
+    }
+
+    balance -= bet;
+    balanceDisplay.innerText = balance;
+
+    multiplier = 1.00;
+    cashedOut = false;
+    gameRunning = true;
+
+    // Demo crash point
+    crashPoint = (Math.random() * 5 + 1.2).toFixed(2);
+
+    multiplierDisplay.innerText = "1.00x";
+    message.innerText = "Game running...";
+    
+    betButton.disabled = true;
+    cashButton.disabled = false;
+
+    timer = setInterval(() => {
+
+        multiplier += 0.01;
+
+        multiplierDisplay.innerText =
+            multiplier.toFixed(2) + "x";
+
+        if (multiplier >= crashPoint) {
+            crashGame();
+        }
+
+    }, 50);
+}
+
+function cashOut() {
+
+    if (!gameRunning || cashedOut) return;
+
+    cashedOut = true;
+
+    let winnings = Math.floor(bet * multiplier);
+
+    balance += winnings;
+    balanceDisplay.innerText = balance;
+
+    message.innerText =
+        "You won " + winnings + " coins! 🎉";
+
+    cashButton.disabled = true;
+
+    addHistory(multiplier.toFixed(2) + "x");
+
+}
+
+function crashGame() {
+
+    clearInterval(timer);
+
+    gameRunning = false;
+
+    if (!cashedOut) {
+        message.innerText =
+            "CRASHED at " + multiplier.toFixed(2) + "x 💥";
+
+        addHistory(multiplier.toFixed(2) + "x");
+    }
+
+    betButton.disabled = false;
+    cashButton.disabled = true;
+}
+
+function addHistory(value) {
+
+    let item = document.createElement("div");
+
+    item.innerText = "• " + value;
+
+    history.prepend(item);
+
+}
+
+</script>
+
+</body>
+  </html>
